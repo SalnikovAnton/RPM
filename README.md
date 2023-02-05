@@ -82,13 +82,62 @@ Feb 05 18:42:46 otuslinux systemd[1]: nginx.service: Can't open PID file /var/ru
 Feb 05 18:42:46 otuslinux systemd[1]: Started nginx - high performance web server.
 ```
 
+#### 2 Теперь приступим к созданию своего репозитория.
 
+Создаем каталог /repo в директории для статики в nginx
+```
+[root@otuslinux ~]# mkdir /usr/share/nginx/html/repo
+```
+Копируем туда наш собранный RPM пакет nginx и дополнительно RPM для установки репозитория Percona-Server
+```
+[root@otuslinux ~]# cp rpmbuild/RPMS/x86_64/nginx-1.20.2-1.el8.ngx.x86_64.rpm /usr/share/nginx/html/repo/
+[root@otuslinux ~]# wget https://downloads.percona.com/downloads/percona-distribution-mysql-ps/percona-distribution-mysql-ps-8.0.28/binary/redhat/8/x86_64/percona-orchestrator-3.2.6-2.el8.x86_64.rpm -O /usr/share/nginx/html/repo/percona-orchestrator-3.2.6-2.el8.x86_64.rpm
+```
+получается
+```
+[root@otuslinux ~]# ll /usr/share/nginx/html/repo/
+total 7120
+-rw-r--r--. 1 root root 2060740 Feb  5 18:51 nginx-1.20.2-1.el8.ngx.x86_64.rpm
+-rw-r--r--. 1 root root 5222976 Feb 16  2022 percona-orchestrator-3.2.6-2.el8.x86_64.rpm
+```
+Инициализируем репозиторий командой
+```
+[root@otuslinux ~]# createrepo /usr/share/nginx/html/repo/
+Directory walk started
+Directory walk done - 2 packages
+Temporary output repo path: /usr/share/nginx/html/repo/.repodata/
+Preparing sqlite DBs
+Pool started (with 5 workers)
+Pool finished
+```
+настроим в NGINX доступ к листингу каталога, для этого в файле /etc/nginx/conf.d/default.conf добавим директиву autoindex on. В результате location будет выглядеть так
+```
+server {
+    listen       80;
+    server_name  localhost;
 
+    #access_log  /var/log/nginx/host.access.log  main;
 
-
-
-
-#### 2 
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        autoindex on;                      < обавили эту директиву
+    }
+```
+Проверяем синтаксис и перезапускаем NGINX
+```
+[root@otuslinux ~]# nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[root@otuslinux ~]# nginx -s reload
 ```
 
-```
+
+
+
+
+
+
+
+
+
