@@ -121,7 +121,7 @@ server {
     location / {
         root   /usr/share/nginx/html;
         index  index.html index.htm;
-        autoindex on;                      < обавили эту директиву
+        autoindex on;                      < добавили эту директиву
     }
 ```
 Проверяем синтаксис и перезапускаем NGINX
@@ -131,13 +131,49 @@ nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
 [root@otuslinux ~]# nginx -s reload
 ```
+Проверим с помощью curl:
+```
+[root@otuslinux ~]# curl -a http://localhost/repo/
+<html>
+<head><title>Index of /repo/</title></head>
+<body>
+<h1>Index of /repo/</h1><hr><pre><a href="../">../</a>
+<a href="repodata/">repodata/</a>                                          05-Feb-2023 18:59                   -
+<a href="nginx-1.20.2-1.el8.ngx.x86_64.rpm">nginx-1.20.2-1.el8.ngx.x86_64.rpm</a>                  05-Feb-2023 18:51             2060740
+<a href="percona-orchestrator-3.2.6-2.el8.x86_64.rpm">percona-orchestrator-3.2.6-2.el8.x86_64.rpm</a>        16-Feb-2022 15:57             5222976
+</pre><hr></body>
+</html>
+```
+Теперь добавим репазиторий в /etc/yum.repos.d
+```
+[root@otuslinux ~]# cat >> /etc/yum.repos.d/otus.repo << EOF
+> [otus]
+> name=otus-linux
+> baseurl=http://localhost/repo
+> gpgcheck=0
+> enabled=1
+> EOF
+```
+Проверяем подключение репозиторий и смотрим что в нем есть:
+```
+[root@otuslinux ~]# yum repolist enabled | grep otus
+otus                           otus-linux
 
+[root@otuslinux ~]# yum list | grep otus
+otus-linux                                      183 kB/s | 2.8 kB     00:00    
+percona-orchestrator.x86_64                            2:3.2.6-2.el8                                              otus            
+```
+установим репозиторий percona-release
+```
+[root@otuslinux ~]# yum install percona-orchestrator.x86_64 -y
 
+----
+Installed:
+  jq-1.6-6.el8.x86_64     oniguruma-6.8.2-2.el8.x86_64     percona-orchestrator-2:3.2.6-2.el8.x86_64    
 
-
-
-
-
-
-
-
+Complete!
+```
+P.S. Команда для обновления репозиторий (необходимо при каждом добавлении файлов)
+```
+createrepo /usr/share/nginx/html/repo/
+```
