@@ -144,6 +144,9 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 </pre><hr></body>
 </html>
 ```
+Через браузер 
+![Image alt](https://github.com/SalnikovAnton/RPM/blob/main/repo.png)
+
 Теперь добавим репазиторий в /etc/yum.repos.d
 ```
 [root@otuslinux ~]# cat >> /etc/yum.repos.d/otus.repo << EOF
