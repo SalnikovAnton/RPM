@@ -33,7 +33,7 @@ wget https://downloads.percona.com/downloads/percona-distribution-mysql-ps/perco
 
 createrepo /usr/share/nginx/html/repo/
 
-sed '9a\autoindex on;' /etc/nginx/conf.d/default.conf 
+sed '9a\autoindex on;/w output' /etc/nginx/conf.d/default.conf 
 
 nginx -s reload
 
